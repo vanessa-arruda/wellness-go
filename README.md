@@ -56,6 +56,8 @@ Tests run against a separate `wellness_test` Postgres database (see `backend/tes
 - `POST /auth/google` — not yet implemented (501)
 - `GET /profile/me` / `PUT /profile/me` — read/upsert the current user's profile (auth required)
 - `GET /exercises`, `/exercises/search`, `/exercises/{id}`, `/exercises/body-parts`, `/exercises/equipments`, `/exercises/muscles`, `/exercises/exercise-types` — proxy the ExerciseDB catalog below (auth required)
+- `POST /workout-templates`, `GET /workout-templates`, `GET /workout-templates/{id}`, `PUT /workout-templates/{id}`, `DELETE /workout-templates/{id}` — template CRUD (name + ordered list of exercises with target sets/reps; auth required)
+- `POST /workout-templates/{id}/schedule` — assign a template to one or more days of the week for a date range; `GET /workout-templates/schedule` — list the current user's full schedule; `DELETE /workout-templates/schedule/{entry_id}` — remove one entry (auth required)
 
 ### Exercise catalog (ExerciseDB)
 
@@ -73,3 +75,7 @@ Current subscription: **Basic Plan**
 | Languages | English translations |
 
 A **Custom Enterprise Plan** exists with 3D exercise videos, descriptive step images, and a 1,000 requests/hour rate limit, for if the Basic plan's 200-exercise library or monthly cap becomes limiting.
+
+### Workout scheduling
+
+A workout template (e.g. "A", "B") can be assigned to specific days of the week over a date range — e.g. template A on Mon/Wed, template B on Tue/Thu, both from 2026-07-20 through some end date. Scheduling a day that's already claimed by another schedule in an overlapping date range returns `409` with the conflicting entries; resubmitting with `"override": true` replaces it. Overriding **splits** the conflicting entry around the new range rather than deleting it outright — e.g. replacing "Mondays from Aug 1 onward" only truncates the old entry to end July 31, it doesn't erase the Mondays before that.

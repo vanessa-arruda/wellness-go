@@ -18,3 +18,6 @@ All notable changes to this project are documented here, grouped by date.
 - Added `get_current_user` auth dependency (JWT bearer token → `User`) to support authenticated endpoints beyond `auth` itself.
 - Added `exercises` module proxying the ExerciseDB (AscendAPI) catalog on RapidAPI instead of storing exercise data locally: `GET /exercises`, `/exercises/search`, `/exercises/{id}`, `/exercises/body-parts`, `/exercises/equipments`, `/exercises/muscles`, `/exercises/exercise-types`, with a process-local TTL cache to stay within the Basic plan's 2,000 requests/month cap.
 - Documented the ExerciseDB integration and its plan limits in README.md.
+- Added `workout_templates` module: `WorkoutTemplate` + `TemplateExercise` (denormalized ExerciseDB snapshot, no local exercises table to FK against) with full CRUD, and `ScheduleEntry` for assigning a template to specific days of the week over a date range.
+- Added weekly workout scheduling with conflict detection: creating an overlapping schedule returns `409` with the conflicting entries; `"override": true` replaces it by **splitting** the conflicting entry around the new date range instead of deleting it, preserving history outside the overridden window.
+- Migration creating `workout_templates`, `template_exercises`, `schedule_entries` tables.
