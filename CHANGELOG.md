@@ -13,3 +13,6 @@ All notable changes to this project are documented here, grouped by date.
 - Fixed missing `email-validator` dependency required by `EmailStr` schemas.
 - Fixed `passlib`/`bcrypt` incompatibility by pinning `bcrypt<4.1`.
 - Added README setup guide and this CHANGELOG.
+- Fixed `docker-compose.yml` `db` port collision with a native local Postgres by remapping to host `5433`.
+- Added `profile` module: `Profile` model (display name, unit preference, date of birth, height), `GET /profile/me`, `PUT /profile/me` (upsert), and a migration creating the `profiles` table.
+- Added `get_current_user` auth dependency (JWT bearer token → `User`) to support authenticated endpoints beyond `auth` itself.

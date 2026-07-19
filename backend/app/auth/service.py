@@ -23,6 +23,11 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
+async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> User | None:
+    result = await db.execute(select(User).where(User.id == user_id))
+    return result.scalar_one_or_none()
+
+
 async def register_user(db: AsyncSession, email: str, password: str) -> User:
     if await get_user_by_email(db, email) is not None:
         raise AuthError("Email already registered")
@@ -59,8 +64,7 @@ async def refresh_token_pair(db: AsyncSession, refresh_token: str) -> TokenPair:
     except (KeyError, ValueError):
         raise AuthError("Invalid refresh token") from None
 
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
+    user = await get_user_by_id(db, user_id)
     if user is None:
         raise AuthError("User not found")
 
