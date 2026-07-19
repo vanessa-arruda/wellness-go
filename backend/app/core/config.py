@@ -13,5 +13,9 @@ class Settings(BaseSettings):
     google_client_id: str | None = None
     google_client_secret: str | None = None
 
+    exercisedb_api_key: str | None = None
+    exercisedb_api_host: str = "edb-with-videos-and-images-by-ascendapi.p.rapidapi.com"
+    exercisedb_base_url: str = "https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1"
+
 
 settings = Settings()

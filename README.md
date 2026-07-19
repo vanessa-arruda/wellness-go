@@ -54,3 +54,22 @@ Tests run against a separate `wellness_test` Postgres database (see `backend/tes
 - `POST /auth/login` — email/password login
 - `POST /auth/refresh` — exchange a refresh token for a new pair
 - `POST /auth/google` — not yet implemented (501)
+- `GET /profile/me` / `PUT /profile/me` — read/upsert the current user's profile (auth required)
+- `GET /exercises`, `/exercises/search`, `/exercises/{id}`, `/exercises/body-parts`, `/exercises/equipments`, `/exercises/muscles`, `/exercises/exercise-types` — proxy the ExerciseDB catalog below (auth required)
+
+### Exercise catalog (ExerciseDB)
+
+The exercise catalog isn't stored in our own database — the backend proxies [ExerciseDB (AscendAPI) on RapidAPI](https://rapidapi.com/ascendapi/api/edb-with-videos-and-images-by-ascendapi) so users pick from a real catalog instead of us maintaining one. The RapidAPI key is server-side only (`EXERCISEDB_API_KEY` in `backend/.env`) and never reaches the frontend; responses are cached in-process (1 hour for exercise lists, 24 hours for reference data like body parts/equipment) since the plan below allows caching and has a hard monthly cap.
+
+Current subscription: **Basic Plan**
+
+| Limit | Value |
+| --- | --- |
+| Requests | 2,000 / month (hard limit) |
+| Exercise library size | 200 |
+| Media calls | Unlimited |
+| Videos / images | Included, watermarked |
+| Caching | Allowed |
+| Languages | English translations |
+
+A **Custom Enterprise Plan** exists with 3D exercise videos, descriptive step images, and a 1,000 requests/hour rate limit, for if the Basic plan's 200-exercise library or monthly cap becomes limiting.

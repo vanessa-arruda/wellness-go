@@ -16,3 +16,5 @@ All notable changes to this project are documented here, grouped by date.
 - Fixed `docker-compose.yml` `db` port collision with a native local Postgres by remapping to host `5433`.
 - Added `profile` module: `Profile` model (display name, unit preference, date of birth, height), `GET /profile/me`, `PUT /profile/me` (upsert), and a migration creating the `profiles` table.
 - Added `get_current_user` auth dependency (JWT bearer token → `User`) to support authenticated endpoints beyond `auth` itself.
+- Added `exercises` module proxying the ExerciseDB (AscendAPI) catalog on RapidAPI instead of storing exercise data locally: `GET /exercises`, `/exercises/search`, `/exercises/{id}`, `/exercises/body-parts`, `/exercises/equipments`, `/exercises/muscles`, `/exercises/exercise-types`, with a process-local TTL cache to stay within the Basic plan's 2,000 requests/month cap.
+- Documented the ExerciseDB integration and its plan limits in README.md.
