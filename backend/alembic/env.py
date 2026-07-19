@@ -14,6 +14,7 @@ from app.profile import models as profile_models  # noqa: F401  ensures Profile 
 from app.workout_templates import models as workout_templates_models  # noqa: F401  ensures workout_templates models are registered on Base.metadata
 from app.workout_sessions import models as workout_sessions_models  # noqa: F401  ensures workout_sessions models are registered on Base.metadata
 from app.measurements import models as measurements_models  # noqa: F401  ensures measurements models are registered on Base.metadata
+from app.mood import models as mood_models  # noqa: F401  ensures mood models are registered on Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

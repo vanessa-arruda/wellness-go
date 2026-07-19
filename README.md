@@ -62,6 +62,7 @@ Tests run against a separate `wellness_test` Postgres database (see `backend/tes
 - `POST /workout-sessions/{id}/sets`, `PUT /workout-sessions/{id}/sets/{set_id}`, `DELETE /workout-sessions/{id}/sets/{set_id}` — log/edit/remove one set at a time while the session is in progress; `POST /workout-sessions/{id}/finish` — mark it done (auth required)
 - `POST/GET /measurements/weight`, `PUT/DELETE /measurements/weight/{id}` — weight history (auth required)
 - `POST/GET /measurements/body`, `PUT/DELETE /measurements/body/{id}` — body circumference measurements (auth required)
+- `POST/GET /mood`, `PUT/DELETE /mood/{id}` — mood check-ins, one per day (auth required)
 
 ### Exercise catalog (ExerciseDB)
 
@@ -91,3 +92,7 @@ A session always starts from a template. Sets are logged one at a time as the wo
 ### Measurements
 
 Weight (`/measurements/weight`) and body circumference measurements (`/measurements/body`) are separate resources with independent dates, since weight is typically logged far more often than a full measurement pass. Body measurements track neck, chest, waist, navel (umbilical — distinct from waist), hips, left/right arm, left/right thigh, and left/right calf, all in cm. Every field except `recorded_at` is optional — logging just `waist_cm` leaves the rest `null`, no need to fill in a full set every time.
+
+### Mood
+
+One check-in per day (`user_id` + `recorded_at` is unique — a second `POST` for the same date returns `409`), but each check-in can carry **multiple** mood tags rather than a single value, since a day is rarely just one feeling. Tags are a fixed set of 15, stored as a Postgres array column (`mood_tag[]`): positive (joyful, peaceful, hopeful, energetic, confident), reflective (nostalgic, contemplative, inspired, relieved, curious), and negative (anxious, frustrated, gloomy, tense, irritable). An optional free-text `note` rounds it out.
