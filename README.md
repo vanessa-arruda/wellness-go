@@ -60,6 +60,8 @@ Tests run against a separate `wellness_test` Postgres database (see `backend/tes
 - `POST /workout-templates/{id}/schedule` — assign a template to one or more days of the week for a date range; `GET /workout-templates/schedule` — list the current user's full schedule; `DELETE /workout-templates/schedule/{entry_id}` — remove one entry (auth required)
 - `POST /workout-sessions` (starts from a template), `GET /workout-sessions`, `GET /workout-sessions/{id}`, `DELETE /workout-sessions/{id}` — workout session CRUD (auth required)
 - `POST /workout-sessions/{id}/sets`, `PUT /workout-sessions/{id}/sets/{set_id}`, `DELETE /workout-sessions/{id}/sets/{set_id}` — log/edit/remove one set at a time while the session is in progress; `POST /workout-sessions/{id}/finish` — mark it done (auth required)
+- `POST/GET /measurements/weight`, `PUT/DELETE /measurements/weight/{id}` — weight history (auth required)
+- `POST/GET /measurements/body`, `PUT/DELETE /measurements/body/{id}` — body circumference measurements (auth required)
 
 ### Exercise catalog (ExerciseDB)
 
@@ -85,3 +87,7 @@ A workout template (e.g. "A", "B") can be assigned to specific days of the week 
 ### Workout sessions
 
 A session always starts from a template. Sets are logged one at a time as the workout happens (`POST /workout-sessions/{id}/sets`) — each call persists immediately, nothing is held until the end. `set_number` auto-increments per exercise within the session. Skipping a template exercise entirely is fine — it just has no logged sets. Mistakes can be fixed via `PUT .../sets/{set_id}` at any point, including after the session is finished. `POST /workout-sessions/{id}/finish` just stamps a `finished_at` timestamp and blocks further *new* sets — the data was already saved as you went.
+
+### Measurements
+
+Weight (`/measurements/weight`) and body circumference measurements (`/measurements/body`) are separate resources with independent dates, since weight is typically logged far more often than a full measurement pass. Body measurements track neck, chest, waist, navel (umbilical — distinct from waist), hips, left/right arm, left/right thigh, and left/right calf, all in cm. Every field except `recorded_at` is optional — logging just `waist_cm` leaves the rest `null`, no need to fill in a full set every time.
