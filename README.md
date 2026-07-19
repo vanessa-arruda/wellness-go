@@ -58,6 +58,8 @@ Tests run against a separate `wellness_test` Postgres database (see `backend/tes
 - `GET /exercises`, `/exercises/search`, `/exercises/{id}`, `/exercises/body-parts`, `/exercises/equipments`, `/exercises/muscles`, `/exercises/exercise-types` — proxy the ExerciseDB catalog below (auth required)
 - `POST /workout-templates`, `GET /workout-templates`, `GET /workout-templates/{id}`, `PUT /workout-templates/{id}`, `DELETE /workout-templates/{id}` — template CRUD (name + ordered list of exercises with target sets/reps; auth required)
 - `POST /workout-templates/{id}/schedule` — assign a template to one or more days of the week for a date range; `GET /workout-templates/schedule` — list the current user's full schedule; `DELETE /workout-templates/schedule/{entry_id}` — remove one entry (auth required)
+- `POST /workout-sessions` (starts from a template), `GET /workout-sessions`, `GET /workout-sessions/{id}`, `DELETE /workout-sessions/{id}` — workout session CRUD (auth required)
+- `POST /workout-sessions/{id}/sets`, `PUT /workout-sessions/{id}/sets/{set_id}`, `DELETE /workout-sessions/{id}/sets/{set_id}` — log/edit/remove one set at a time while the session is in progress; `POST /workout-sessions/{id}/finish` — mark it done (auth required)
 
 ### Exercise catalog (ExerciseDB)
 
@@ -79,3 +81,7 @@ A **Custom Enterprise Plan** exists with 3D exercise videos, descriptive step im
 ### Workout scheduling
 
 A workout template (e.g. "A", "B") can be assigned to specific days of the week over a date range — e.g. template A on Mon/Wed, template B on Tue/Thu, both from 2026-07-20 through some end date. Scheduling a day that's already claimed by another schedule in an overlapping date range returns `409` with the conflicting entries; resubmitting with `"override": true` replaces it. Overriding **splits** the conflicting entry around the new range rather than deleting it outright — e.g. replacing "Mondays from Aug 1 onward" only truncates the old entry to end July 31, it doesn't erase the Mondays before that.
+
+### Workout sessions
+
+A session always starts from a template. Sets are logged one at a time as the workout happens (`POST /workout-sessions/{id}/sets`) — each call persists immediately, nothing is held until the end. `set_number` auto-increments per exercise within the session. Skipping a template exercise entirely is fine — it just has no logged sets. Mistakes can be fixed via `PUT .../sets/{set_id}` at any point, including after the session is finished. `POST /workout-sessions/{id}/finish` just stamps a `finished_at` timestamp and blocks further *new* sets — the data was already saved as you went.
