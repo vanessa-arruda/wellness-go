@@ -4,6 +4,8 @@ sqlalchemy[asyncio]
 asyncpg
 alembic
 pydantic-settings
+email-validator
 authlib
 passlib[bcrypt]
+bcrypt<4.1
 python-jose[cryptography]
