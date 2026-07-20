@@ -69,9 +69,10 @@ Other Makefile targets: `make lint`, `make format` (auto-fix), `make format-chec
 ### API
 
 - `GET /health` — DB connectivity check
-- `POST /auth/register` — email/password registration, returns a JWT access/refresh pair
-- `POST /auth/login` — email/password login
-- `POST /auth/refresh` — exchange a refresh token for a new pair
+- `POST /auth/register` — email/password registration, returns `{access_token, token_type}`; sets the refresh token as an httpOnly cookie (see below)
+- `POST /auth/login` — email/password login, same response/cookie shape as register
+- `POST /auth/refresh` — reads the refresh token from the cookie (no body), returns a new access token and rotates the cookie
+- `POST /auth/logout` — clears the refresh-token cookie
 - `POST /auth/google` — not yet implemented (501)
 - `GET /profile/me` / `PUT /profile/me` — read/upsert the current user's profile (auth required)
 - `GET /exercises`, `/exercises/search`, `/exercises/{id}`, `/exercises/body-parts`, `/exercises/equipments`, `/exercises/muscles`, `/exercises/exercise-types` — proxy the ExerciseDB catalog below (auth required)
@@ -87,6 +88,12 @@ Other Makefile targets: `make lint`, `make format` (auto-fix), `make format-chec
 - `GET /dashboard/workout-stats`, `/dashboard/personal-records` — session count/rate + per-exercise volume trend over a date range, and all-time PRs per exercise (auth required)
 - `GET /dashboard/adherence` — scheduled vs. completed workout days over a date range, with a per-day breakdown (auth required)
 - `GET /dashboard/export/weight.csv`, `/body-measurements.csv`, `/mood.csv`, `/workout-sessions.csv` — per-resource data export (auth required)
+
+### Auth token strategy
+
+Matches Architecture.md's original decision (the initial implementation had drifted from it — both tokens were returned in the JSON body with no cookies at all; fixed when frontend work started since the frontend needs to build against the correct contract). The **access token** is short-lived (15 min default) and returned in the JSON response body — the frontend holds it in memory only, never `localStorage`, since anything JS-readable is readable by an XSS payload too. The **refresh token** is set as an `HttpOnly` cookie (`Path=/auth`, `SameSite=Lax`) — JavaScript can never read it, so even a successful XSS can't exfiltrate it; the browser just sends it automatically on requests to `/auth/*`. `COOKIE_SECURE` must be `True` in production (HTTPS) — it's `False` by default only because browsers refuse `Secure` cookies over plain local HTTP. `CORSMiddleware` is configured with `allow_credentials=True` and an explicit `FRONTEND_ORIGIN` (required — credentials mode disallows the `*` wildcard origin).
+
+Known follow-up for whenever frontend and backend deploy to genuinely different domains (not just different local ports, which browsers treat as the same "site" for cookie purposes): `SameSite=Lax` won't be sent on cross-site fetch requests, so it'll need to become `SameSite=None` (paired with `Secure=True`, which is mandatory for `None`).
 
 ### Exercise catalog (ExerciseDB)
 

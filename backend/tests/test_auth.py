@@ -4,14 +4,16 @@ from httpx import AsyncClient
 async def test_register_login_refresh_roundtrip(client: AsyncClient) -> None:
     register_resp = await client.post("/auth/register", json={"email": "test@example.com", "password": "s3cret-pw"})
     assert register_resp.status_code == 201
-    tokens = register_resp.json()
-    assert tokens["access_token"]
-    assert tokens["refresh_token"]
+    body = register_resp.json()
+    assert body["access_token"]
+    assert "refresh_token" not in body
+    assert "refresh_token" in register_resp.cookies
 
     login_resp = await client.post("/auth/login", json={"email": "test@example.com", "password": "s3cret-pw"})
     assert login_resp.status_code == 200
+    assert "refresh_token" not in login_resp.json()
 
-    refresh_resp = await client.post("/auth/refresh", json={"refresh_token": tokens["refresh_token"]})
+    refresh_resp = await client.post("/auth/refresh")
     assert refresh_resp.status_code == 200
     assert refresh_resp.json()["access_token"]
 
@@ -31,6 +33,23 @@ async def test_login_wrong_password_is_unauthorized(client: AsyncClient) -> None
     assert resp.status_code == 401
 
 
-async def test_refresh_with_invalid_token_is_unauthorized(client: AsyncClient) -> None:
-    resp = await client.post("/auth/refresh", json={"refresh_token": "not-a-real-token"})
+async def test_refresh_without_cookie_is_unauthorized(client: AsyncClient) -> None:
+    resp = await client.post("/auth/refresh")
     assert resp.status_code == 401
+
+
+async def test_refresh_with_invalid_cookie_is_unauthorized(client: AsyncClient) -> None:
+    client.cookies.set("refresh_token", "not-a-real-token")
+    resp = await client.post("/auth/refresh")
+    assert resp.status_code == 401
+
+
+async def test_logout_clears_refresh_cookie(client: AsyncClient) -> None:
+    await client.post("/auth/register", json={"email": "logout@example.com", "password": "s3cret-pw"})
+    assert "refresh_token" in client.cookies
+
+    logout_resp = await client.post("/auth/logout")
+    assert logout_resp.status_code == 204
+
+    refresh_resp = await client.post("/auth/refresh")
+    assert refresh_resp.status_code == 401

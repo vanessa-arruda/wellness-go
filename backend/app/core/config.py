@@ -17,5 +17,10 @@ class Settings(BaseSettings):
     exercisedb_api_host: str = "edb-with-videos-and-images-by-ascendapi.p.rapidapi.com"
     exercisedb_base_url: str = "https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1"
 
+    frontend_origin: str = "http://localhost:3000"
+    # Must be True in production (HTTPS) — False is only for local HTTP dev,
+    # since browsers refuse to send Secure cookies over plain HTTP.
+    cookie_secure: bool = False
+
 
 settings = Settings()

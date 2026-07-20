@@ -1,8 +1,10 @@
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.router import router as auth_router
+from app.core.config import settings
 from app.core.db import get_db
 from app.dashboard.router import router as dashboard_router
 from app.exercises.router import router as exercises_router
@@ -13,6 +15,14 @@ from app.workout_sessions.router import router as workout_sessions_router
 from app.workout_templates.router import router as workout_templates_router
 
 app = FastAPI(title="wellness-go")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.frontend_origin],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth_router)
 app.include_router(profile_router)

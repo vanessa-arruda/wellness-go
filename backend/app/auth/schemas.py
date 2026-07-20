@@ -21,10 +21,15 @@ class UserRead(BaseModel):
 
 
 class TokenPair(BaseModel):
+    """Internal shape used by the service layer. Never returned directly by
+    a router — the refresh token goes into an httpOnly cookie, not the
+    response body."""
+
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
 
 
-class RefreshRequest(BaseModel):
-    refresh_token: str
+class AccessTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
