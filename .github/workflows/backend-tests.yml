@@ -1,0 +1,69 @@
+name: Backend Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: wellness
+          POSTGRES_PASSWORD: wellness
+          POSTGRES_DB: wellness
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wellness"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://wellness:wellness@localhost:5432/wellness
+      JWT_SECRET: ci-test-secret
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "15"
+      REFRESH_TOKEN_EXPIRE_DAYS: "30"
+      EXERCISEDB_API_KEY: ci-placeholder
+      EXERCISEDB_API_HOST: edb-with-videos-and-images-by-ascendapi.p.rapidapi.com
+      EXERCISEDB_BASE_URL: https://edb-with-videos-and-images-by-ascendapi.p.rapidapi.com/api/v1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: |
+          source .venv/bin/activate
+          ruff check .
+
+      - name: Verify migrations apply cleanly
+        run: |
+          source .venv/bin/activate
+          alembic upgrade head
+
+      - name: Create test database
+        run: PGPASSWORD=wellness psql -h localhost -U wellness -d wellness -c "CREATE DATABASE wellness_test;"
+
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          python -m pytest -v

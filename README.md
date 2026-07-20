@@ -47,6 +47,10 @@ python -m pytest
 
 Tests run against a separate `wellness_test` Postgres database (see `backend/tests/conftest.py`) with per-test transaction rollback for isolation.
 
+### CI
+
+`.github/workflows/backend-tests.yml` runs on every push/PR: `ruff check`, a from-scratch `alembic upgrade head` against a throwaway database (catches a broken migration chain, not just "works on my already-migrated dev DB"), then the full pytest suite against its own Postgres service container.
+
 ### API
 
 - `GET /health` — DB connectivity check
