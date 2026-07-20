@@ -4,7 +4,7 @@ Personal wellness assistant project to improve health habits.
 
 ## Architecture
 
-Modular-monolith FastAPI backend (Python 3.13), PostgreSQL, SQLAlchemy 2.0 (async), Alembic migrations, JWT auth (email/password now, Google OAuth stubbed). A separate Next.js/TypeScript frontend is planned for a later pass.
+Modular-monolith FastAPI backend (Python 3.13), PostgreSQL, SQLAlchemy 2.0 (async), Alembic migrations, JWT auth (email/password now, Google OAuth stubbed). A separate Next.js/TypeScript frontend (`frontend/`) consumes the backend over HTTP/JSON only.
 
 ## Backend
 
@@ -131,3 +131,34 @@ One check-in per day (`user_id` + `recorded_at` is unique — a second `POST` fo
 ### Dashboard
 
 Read-only aggregation over the other modules — no tables of its own. `/dashboard/today` gives a single-call snapshot for a home screen. `/dashboard/workout-stats` groups logged-set volume (`weight × reps`) by exercise and by day within a date range, for progress charts; `/dashboard/personal-records` is deliberately **not** date-scoped, since PRs are conventionally all-time bests. `/dashboard/adherence` expands `schedule_entries` into actual calendar dates within a range and checks whether *any* session was completed on each one (lenient — not strictly matched to the scheduled template), returning both a summary percentage and a per-day breakdown for a calendar view. CSV exports are one file per resource, matching how the data is already split by module, and cover a user's full history (not date-filtered).
+
+## Frontend
+
+Next.js 16 (App Router) + TypeScript + Tailwind CSS + shadcn/ui, in `frontend/`. Talks to the backend only over HTTP/JSON (`NEXT_PUBLIC_API_URL`) — never imports backend code.
+
+### Prerequisites
+
+- Node.js 20+ (`.nvmrc` pins `20.20.2` — run `nvm use` in `frontend/` if you use nvm)
+
+### Local setup
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local  # NEXT_PUBLIC_API_URL, defaults to http://localhost:8000
+npm run dev
+```
+
+Requires the backend running (see above) with `FRONTEND_ORIGIN=http://localhost:3000` in `backend/.env` (already the default) for CORS to allow the browser calls.
+
+### Auth flow
+
+The access token lives in memory only (React context, `src/lib/auth-context.tsx`) — never `localStorage`. The refresh token is the backend's `HttpOnly` cookie (see backend's Auth token strategy above); the frontend never reads or stores it directly, the browser just attaches it automatically on calls to the backend with `credentials: 'include'`. On mount, `AuthProvider` attempts a silent `POST /auth/refresh` to restore a session across page reloads. `fetchWithAuth` (exposed via `useAuth()`) wraps API calls, retrying once through a fresh refresh on a `401`. `ProtectedRoute` (`src/components/protected-route.tsx`) redirects to `/login` if no session after the initial load resolves.
+
+### Pages (first vertical slice)
+
+- `/login`, `/register` — email/password forms
+- `/dashboard` — today's scheduled workout, completion status, today's mood, latest weight (calls `GET /dashboard/today`)
+- `/` redirects to `/dashboard`, which redirects to `/login` if unauthenticated
+
+Everything else the backend exposes (exercises, templates, sessions, measurements, mood logging, full dashboard stats) has no frontend yet.
