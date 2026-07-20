@@ -15,12 +15,23 @@ from app.measurements.schemas import BodyMeasurementRead, WeightEntryRead
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
+# Formula-trigger characters per OWASP's CSV Injection guidance. A leading
+# apostrophe neutralizes them in spreadsheet apps without altering the
+# visible value.
+_FORMULA_TRIGGER_CHARS = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _sanitize_csv_cell(value: object) -> object:
+    if isinstance(value, str) and value.startswith(_FORMULA_TRIGGER_CHARS):
+        return "'" + value
+    return value
+
 
 def _csv_response(filename: str, header: list[str], rows: list[list]) -> StreamingResponse:
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(header)
-    writer.writerows(rows)
+    writer.writerows([_sanitize_csv_cell(cell) for cell in row] for row in rows)
     return StreamingResponse(
         iter([buffer.getvalue()]),
         media_type="text/csv",

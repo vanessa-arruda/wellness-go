@@ -1,3 +1,5 @@
+import csv
+import io
 from datetime import datetime, timedelta, timezone
 
 from httpx import AsyncClient
@@ -181,6 +183,39 @@ async def test_csv_exports(client: AsyncClient) -> None:
     assert resp.headers["content-type"].startswith("text/csv")
     assert "recorded_at,weight_kg" in resp.text
     assert "72.0" in resp.text or "72" in resp.text
+
+
+async def test_csv_export_neutralizes_formula_injection(client: AsyncClient) -> None:
+    token = await _register_and_get_access_token(client, "dash6@example.com")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    note_payload = '=HYPERLINK("http://evil.com","click")'
+    await client.post(
+        "/mood",
+        headers=headers,
+        json={"moods": ["joyful"], "note": note_payload, "recorded_at": "2026-07-01"},
+    )
+    mood_csv = (await client.get("/dashboard/export/mood.csv", headers=headers)).text
+    mood_rows = list(csv.reader(io.StringIO(mood_csv)))
+    note_cell = mood_rows[1][2]
+    assert note_cell == "'" + note_payload
+    assert not note_cell.startswith("=")
+
+    template_id = await _create_template(client, headers)
+    session_id = (
+        await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})
+    ).json()["id"]
+    exercise_name_payload = "=cmd|'/c calc'!A0"
+    await client.post(
+        f"/workout-sessions/{session_id}/sets",
+        headers=headers,
+        json={"exercise_id": "exr_bench", "exercise_name": exercise_name_payload, "weight": 40, "reps": 10},
+    )
+    sessions_csv = (await client.get("/dashboard/export/workout-sessions.csv", headers=headers)).text
+    session_rows = list(csv.reader(io.StringIO(sessions_csv)))
+    exercise_name_cell = session_rows[1][4]
+    assert exercise_name_cell == "'" + exercise_name_payload
+    assert not exercise_name_cell.startswith("=")
 
 
 async def test_dashboard_requires_auth(client: AsyncClient) -> None:
