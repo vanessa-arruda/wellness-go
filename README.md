@@ -63,6 +63,11 @@ Tests run against a separate `wellness_test` Postgres database (see `backend/tes
 - `POST/GET /measurements/weight`, `PUT/DELETE /measurements/weight/{id}` — weight history (auth required)
 - `POST/GET /measurements/body`, `PUT/DELETE /measurements/body/{id}` — body circumference measurements (auth required)
 - `POST/GET /mood`, `PUT/DELETE /mood/{id}` — mood check-ins, one per day (auth required)
+- `GET /dashboard/weight-history`, `/dashboard/body-measurement-history` — chronological (ascending), optionally filtered by `start_date`/`end_date` (auth required)
+- `GET /dashboard/today` — today's scheduled template, whether a session was completed today, today's mood, latest weight (auth required)
+- `GET /dashboard/workout-stats`, `/dashboard/personal-records` — session count/rate + per-exercise volume trend over a date range, and all-time PRs per exercise (auth required)
+- `GET /dashboard/adherence` — scheduled vs. completed workout days over a date range, with a per-day breakdown (auth required)
+- `GET /dashboard/export/weight.csv`, `/body-measurements.csv`, `/mood.csv`, `/workout-sessions.csv` — per-resource data export (auth required)
 
 ### Exercise catalog (ExerciseDB)
 
@@ -96,3 +101,7 @@ Weight (`/measurements/weight`) and body circumference measurements (`/measureme
 ### Mood
 
 One check-in per day (`user_id` + `recorded_at` is unique — a second `POST` for the same date returns `409`), but each check-in can carry **multiple** mood tags rather than a single value, since a day is rarely just one feeling. Tags are a fixed set of 15, stored as a Postgres array column (`mood_tag[]`): positive (joyful, peaceful, hopeful, energetic, confident), reflective (nostalgic, contemplative, inspired, relieved, curious), and negative (anxious, frustrated, gloomy, tense, irritable). An optional free-text `note` rounds it out.
+
+### Dashboard
+
+Read-only aggregation over the other modules — no tables of its own. `/dashboard/today` gives a single-call snapshot for a home screen. `/dashboard/workout-stats` groups logged-set volume (`weight × reps`) by exercise and by day within a date range, for progress charts; `/dashboard/personal-records` is deliberately **not** date-scoped, since PRs are conventionally all-time bests. `/dashboard/adherence` expands `schedule_entries` into actual calendar dates within a range and checks whether *any* session was completed on each one (lenient — not strictly matched to the scheduled template), returning both a summary percentage and a per-day breakdown for a calendar view. CSV exports are one file per resource, matching how the data is already split by module, and cover a user's full history (not date-filtered).
