@@ -49,7 +49,22 @@ Tests run against a separate `wellness_test` Postgres database (see `backend/tes
 
 ### CI
 
-`.github/workflows/backend-tests.yml` runs on every push/PR: `ruff check`, a from-scratch `alembic upgrade head` against a throwaway database (catches a broken migration chain, not just "works on my already-migrated dev DB"), then the full pytest suite against its own Postgres service container.
+`.github/workflows/backend-tests.yml` runs on every push/PR: `ruff check`, `ruff format --check`, a from-scratch `alembic upgrade head` against a throwaway database (catches a broken migration chain, not just "works on my already-migrated dev DB"), then the full pytest suite against its own Postgres service container.
+
+### Local git hooks
+
+Run once per clone to enable them (git hooks are local-only, not something a repo can activate on its own):
+
+```bash
+make install-hooks
+```
+
+This points git at the versioned `.githooks/` directory, enabling:
+
+- **`commit-msg`** — rejects commits whose message doesn't match `type(wellness-go): description` (type is one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`).
+- **`pre-commit`** — rejects the commit if `backend/` fails `ruff check` (lint, including a hard 120-character line-length limit via `E501`) or isn't `ruff format`-clean.
+
+Other Makefile targets: `make lint`, `make format` (auto-fix), `make format-check`, `make test`, `make check` (lint + format-check + test, everything CI runs minus the migration/Postgres steps).
 
 ### API
 

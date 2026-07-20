@@ -15,9 +15,7 @@ async def list_weight_entries(db: AsyncSession, user_id: uuid.UUID) -> list[Weig
 
 
 async def get_weight_entry(db: AsyncSession, user_id: uuid.UUID, entry_id: uuid.UUID) -> WeightEntry | None:
-    result = await db.execute(
-        select(WeightEntry).where(WeightEntry.id == entry_id, WeightEntry.user_id == user_id)
-    )
+    result = await db.execute(select(WeightEntry).where(WeightEntry.id == entry_id, WeightEntry.user_id == user_id))
     return result.scalar_one_or_none()
 
 
@@ -44,16 +42,12 @@ async def delete_weight_entry(db: AsyncSession, entry: WeightEntry) -> None:
 
 async def list_body_measurements(db: AsyncSession, user_id: uuid.UUID) -> list[BodyMeasurement]:
     result = await db.execute(
-        select(BodyMeasurement)
-        .where(BodyMeasurement.user_id == user_id)
-        .order_by(BodyMeasurement.recorded_at.desc())
+        select(BodyMeasurement).where(BodyMeasurement.user_id == user_id).order_by(BodyMeasurement.recorded_at.desc())
     )
     return list(result.scalars().all())
 
 
-async def get_body_measurement(
-    db: AsyncSession, user_id: uuid.UUID, entry_id: uuid.UUID
-) -> BodyMeasurement | None:
+async def get_body_measurement(db: AsyncSession, user_id: uuid.UUID, entry_id: uuid.UUID) -> BodyMeasurement | None:
     result = await db.execute(
         select(BodyMeasurement).where(BodyMeasurement.id == entry_id, BodyMeasurement.user_id == user_id)
     )
@@ -75,9 +69,7 @@ def _apply_body_measurement_fields(entry: BodyMeasurement, payload: BodyMeasurem
     entry.right_calf_cm = payload.right_calf_cm
 
 
-async def create_body_measurement(
-    db: AsyncSession, user_id: uuid.UUID, payload: BodyMeasurementIn
-) -> BodyMeasurement:
+async def create_body_measurement(db: AsyncSession, user_id: uuid.UUID, payload: BodyMeasurementIn) -> BodyMeasurement:
     entry = BodyMeasurement(user_id=user_id)
     _apply_body_measurement_fields(entry, payload)
     db.add(entry)

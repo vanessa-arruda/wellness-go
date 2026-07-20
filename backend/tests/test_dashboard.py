@@ -69,9 +69,7 @@ async def test_today_overview(client: AsyncClient) -> None:
     today_dow = _WEEKDAY_VALUES[today.weekday()]
 
     template_id = await _create_template(client, headers)
-    await _schedule(
-        client, headers, template_id, today_dow, today_str, (today + timedelta(days=7)).isoformat()
-    )
+    await _schedule(client, headers, template_id, today_dow, today_str, (today + timedelta(days=7)).isoformat())
     await client.post("/measurements/weight", headers=headers, json={"weight_kg": 68.5, "recorded_at": today_str})
     await client.post("/mood", headers=headers, json={"moods": ["joyful"], "recorded_at": today_str})
 
@@ -84,9 +82,9 @@ async def test_today_overview(client: AsyncClient) -> None:
     assert body["mood"]["moods"] == ["joyful"]
     assert body["latest_weight"]["weight_kg"] == 68.5
 
-    session_id = (
-        await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})
-    ).json()["id"]
+    session_id = (await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})).json()[
+        "id"
+    ]
     await client.post(
         f"/workout-sessions/{session_id}/sets",
         headers=headers,
@@ -103,9 +101,9 @@ async def test_workout_stats_and_personal_records(client: AsyncClient) -> None:
     headers = {"Authorization": f"Bearer {token}"}
     template_id = await _create_template(client, headers)
 
-    session_id = (
-        await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})
-    ).json()["id"]
+    session_id = (await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})).json()[
+        "id"
+    ]
     await client.post(
         f"/workout-sessions/{session_id}/sets",
         headers=headers,
@@ -155,9 +153,9 @@ async def test_adherence(client: AsyncClient) -> None:
     await _schedule(client, headers, template_done, today_dow, window_start.isoformat(), today.isoformat())
     await _schedule(client, headers, template_missed, missed_dow, window_start.isoformat(), today.isoformat())
 
-    session_id = (
-        await client.post("/workout-sessions", headers=headers, json={"template_id": template_done})
-    ).json()["id"]
+    session_id = (await client.post("/workout-sessions", headers=headers, json={"template_id": template_done})).json()[
+        "id"
+    ]
     await client.post(f"/workout-sessions/{session_id}/finish", headers=headers)
 
     resp = await client.get(
@@ -202,9 +200,9 @@ async def test_csv_export_neutralizes_formula_injection(client: AsyncClient) -> 
     assert not note_cell.startswith("=")
 
     template_id = await _create_template(client, headers)
-    session_id = (
-        await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})
-    ).json()["id"]
+    session_id = (await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})).json()[
+        "id"
+    ]
     exercise_name_payload = "=cmd|'/c calc'!A0"
     await client.post(
         f"/workout-sessions/{session_id}/sets",

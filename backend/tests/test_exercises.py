@@ -55,9 +55,7 @@ async def test_list_exercises_proxies_and_maps_response(client: AsyncClient) -> 
         )
     )
 
-    resp = await client.get(
-        "/exercises", headers={"Authorization": f"Bearer {token}"}, params={"name": "Bench Press"}
-    )
+    resp = await client.get("/exercises", headers={"Authorization": f"Bearer {token}"}, params={"name": "Bench Press"})
     assert resp.status_code == 200
     body = resp.json()
     assert body["meta"]["total"] == 1
@@ -72,9 +70,7 @@ async def test_search_exercises(client: AsyncClient) -> None:
         return_value=Response(200, json={"success": True, "data": [EXERCISE_SAMPLE]})
     )
 
-    resp = await client.get(
-        "/exercises/search", headers={"Authorization": f"Bearer {token}"}, params={"q": "bench"}
-    )
+    resp = await client.get("/exercises/search", headers={"Authorization": f"Bearer {token}"}, params={"q": "bench"})
     assert resp.status_code == 200
     assert resp.json()[0]["name"] == "Bench Press"
 

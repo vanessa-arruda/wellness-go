@@ -55,6 +55,11 @@ jobs:
           source .venv/bin/activate
           ruff check .
 
+      - name: Formatting check
+        run: |
+          source .venv/bin/activate
+          ruff format --check .
+
       - name: Verify migrations apply cleanly
         run: |
           source .venv/bin/activate

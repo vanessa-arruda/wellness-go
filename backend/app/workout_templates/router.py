@@ -99,9 +99,7 @@ async def delete_template(
     await service.delete_template(db, template)
 
 
-@router.post(
-    "/{template_id}/schedule", response_model=list[ScheduleEntryRead], status_code=status.HTTP_201_CREATED
-)
+@router.post("/{template_id}/schedule", response_model=list[ScheduleEntryRead], status_code=status.HTTP_201_CREATED)
 async def create_schedule(
     template_id: uuid.UUID,
     payload: ScheduleCreate,

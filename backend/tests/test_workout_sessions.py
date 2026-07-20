@@ -80,9 +80,9 @@ async def test_update_logged_set_fixes_a_mistake(client: AsyncClient) -> None:
     token = await _register_and_get_access_token(client, "sessions3@example.com")
     headers = {"Authorization": f"Bearer {token}"}
     template_id = await _create_template(client, headers)
-    session_id = (
-        await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})
-    ).json()["id"]
+    session_id = (await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})).json()[
+        "id"
+    ]
 
     logged = (
         await client.post(
@@ -105,9 +105,9 @@ async def test_delete_logged_set(client: AsyncClient) -> None:
     token = await _register_and_get_access_token(client, "sessions4@example.com")
     headers = {"Authorization": f"Bearer {token}"}
     template_id = await _create_template(client, headers)
-    session_id = (
-        await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})
-    ).json()["id"]
+    session_id = (await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})).json()[
+        "id"
+    ]
 
     logged = (
         await client.post(
@@ -128,9 +128,9 @@ async def test_finish_session_blocks_further_logging(client: AsyncClient) -> Non
     token = await _register_and_get_access_token(client, "sessions5@example.com")
     headers = {"Authorization": f"Bearer {token}"}
     template_id = await _create_template(client, headers)
-    session_id = (
-        await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})
-    ).json()["id"]
+    session_id = (await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})).json()[
+        "id"
+    ]
 
     await client.post(
         f"/workout-sessions/{session_id}/sets",
@@ -157,9 +157,9 @@ async def test_delete_session(client: AsyncClient) -> None:
     token = await _register_and_get_access_token(client, "sessions6@example.com")
     headers = {"Authorization": f"Bearer {token}"}
     template_id = await _create_template(client, headers)
-    session_id = (
-        await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})
-    ).json()["id"]
+    session_id = (await client.post("/workout-sessions", headers=headers, json={"template_id": template_id})).json()[
+        "id"
+    ]
 
     delete_resp = await client.delete(f"/workout-sessions/{session_id}", headers=headers)
     assert delete_resp.status_code == 204

@@ -42,9 +42,7 @@ class TemplateExercise(Base):
     __tablename__ = "template_exercises"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    template_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("workout_templates.id", ondelete="CASCADE"), index=True
-    )
+    template_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workout_templates.id", ondelete="CASCADE"), index=True)
     # Denormalized snapshot of the ExerciseDB exercise (see app/exercises) —
     # there's no local exercises table to foreign-key against.
     exercise_id: Mapped[str] = mapped_column(String(64))
@@ -62,9 +60,7 @@ class ScheduleEntry(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
-    template_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("workout_templates.id", ondelete="CASCADE"), index=True
-    )
+    template_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workout_templates.id", ondelete="CASCADE"), index=True)
     day_of_week: Mapped[DayOfWeek] = mapped_column(Enum(DayOfWeek, name="day_of_week"))
     start_date: Mapped[date] = mapped_column(Date)
     end_date: Mapped[date] = mapped_column(Date)

@@ -32,9 +32,7 @@ class LoggedSet(Base):
     __tablename__ = "logged_sets"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("workout_sessions.id", ondelete="CASCADE"), index=True
-    )
+    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workout_sessions.id", ondelete="CASCADE"), index=True)
     # Denormalized snapshot (see app/exercises) — actuals are logged
     # independently of the template's planned values, which can deviate.
     exercise_id: Mapped[str] = mapped_column(String(64))

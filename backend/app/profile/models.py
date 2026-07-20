@@ -17,9 +17,7 @@ class Profile(Base):
     __tablename__ = "profiles"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True
-    )
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
     display_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     unit_preference: Mapped[UnitPreference] = mapped_column(
         Enum(UnitPreference, name="unit_preference"), default=UnitPreference.METRIC

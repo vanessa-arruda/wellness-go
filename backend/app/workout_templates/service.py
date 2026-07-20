@@ -83,9 +83,7 @@ async def _find_conflicts(
 
 async def _entries_by_ids(db: AsyncSession, entry_ids: list[uuid.UUID]) -> list[ScheduleEntry]:
     result = await db.execute(
-        select(ScheduleEntry)
-        .where(ScheduleEntry.id.in_(entry_ids))
-        .options(selectinload(ScheduleEntry.template))
+        select(ScheduleEntry).where(ScheduleEntry.id.in_(entry_ids)).options(selectinload(ScheduleEntry.template))
     )
     return list(result.scalars().all())
 

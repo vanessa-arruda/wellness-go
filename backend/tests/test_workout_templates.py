@@ -97,9 +97,7 @@ async def test_schedule_create_and_list(client: AsyncClient) -> None:
     token = await _register_and_get_access_token(client, "schedule1@example.com")
     headers = {"Authorization": f"Bearer {token}"}
 
-    template_id = (await client.post("/workout-templates", headers=headers, json=_template_payload("A"))).json()[
-        "id"
-    ]
+    template_id = (await client.post("/workout-templates", headers=headers, json=_template_payload("A"))).json()["id"]
 
     schedule_resp = await client.post(
         f"/workout-templates/{template_id}/schedule",
@@ -124,12 +122,8 @@ async def test_schedule_conflict_without_override_returns_409(client: AsyncClien
     token = await _register_and_get_access_token(client, "schedule2@example.com")
     headers = {"Authorization": f"Bearer {token}"}
 
-    template_a = (await client.post("/workout-templates", headers=headers, json=_template_payload("A"))).json()[
-        "id"
-    ]
-    template_b = (await client.post("/workout-templates", headers=headers, json=_template_payload("B"))).json()[
-        "id"
-    ]
+    template_a = (await client.post("/workout-templates", headers=headers, json=_template_payload("A"))).json()["id"]
+    template_b = (await client.post("/workout-templates", headers=headers, json=_template_payload("B"))).json()["id"]
 
     await client.post(
         f"/workout-templates/{template_a}/schedule",
@@ -151,12 +145,8 @@ async def test_schedule_override_splits_conflicting_range(client: AsyncClient) -
     token = await _register_and_get_access_token(client, "schedule3@example.com")
     headers = {"Authorization": f"Bearer {token}"}
 
-    template_a = (await client.post("/workout-templates", headers=headers, json=_template_payload("A"))).json()[
-        "id"
-    ]
-    template_c = (await client.post("/workout-templates", headers=headers, json=_template_payload("C"))).json()[
-        "id"
-    ]
+    template_a = (await client.post("/workout-templates", headers=headers, json=_template_payload("A"))).json()["id"]
+    template_c = (await client.post("/workout-templates", headers=headers, json=_template_payload("C"))).json()["id"]
 
     # A on Mondays for the whole year.
     await client.post(
@@ -193,9 +183,7 @@ async def test_delete_schedule_entry(client: AsyncClient) -> None:
     token = await _register_and_get_access_token(client, "schedule4@example.com")
     headers = {"Authorization": f"Bearer {token}"}
 
-    template_id = (await client.post("/workout-templates", headers=headers, json=_template_payload("A"))).json()[
-        "id"
-    ]
+    template_id = (await client.post("/workout-templates", headers=headers, json=_template_payload("A"))).json()["id"]
     entry_id = (
         await client.post(
             f"/workout-templates/{template_id}/schedule",

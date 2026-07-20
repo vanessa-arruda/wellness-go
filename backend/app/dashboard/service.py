@@ -148,9 +148,7 @@ async def get_today_overview(db: AsyncSession, user_id: uuid.UUID) -> TodayOverv
     )
 
 
-async def get_workout_stats(
-    db: AsyncSession, user_id: uuid.UUID, start_date: date, end_date: date
-) -> WorkoutStats:
+async def get_workout_stats(db: AsyncSession, user_id: uuid.UUID, start_date: date, end_date: date) -> WorkoutStats:
     start_dt, _ = _day_bounds_utc(start_date)
     _, end_dt = _day_bounds_utc(end_date)
 

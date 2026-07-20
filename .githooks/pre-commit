@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Blocks the commit if backend code fails lint (including line-length) or isn't formatted.
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+ruff="$repo_root/backend/.venv/bin/ruff"
+
+if [[ ! -x "$ruff" ]]; then
+  echo "ruff not found at backend/.venv/bin/ruff — set up the backend venv first:" >&2
+  echo "  cd backend && python3.13 -m venv .venv && source .venv/bin/activate && pip install -r requirements-dev.txt" >&2
+  exit 1
+fi
+
+cd "$repo_root/backend"
+
+if ! "$ruff" check .; then
+  echo "" >&2
+  echo "Lint failed (includes line-length > 120). Fix the above, or run 'make format' to auto-fix formatting issues." >&2
+  exit 1
+fi
+
+if ! "$ruff" format --check .; then
+  echo "" >&2
+  echo "Formatting check failed. Run 'make format' to fix, then re-stage and commit again." >&2
+  exit 1
+fi

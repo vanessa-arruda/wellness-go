@@ -57,9 +57,7 @@ async def _get(path: str, params: dict[str, Any] | None = None) -> dict[str, Any
         )
 
     if response.status_code != 200:
-        raise ExerciseDBError(
-            f"ExerciseDB request failed: {response.status_code}", status_code=response.status_code
-        )
+        raise ExerciseDBError(f"ExerciseDB request failed: {response.status_code}", status_code=response.status_code)
 
     body = response.json()
     if not body.get("success", True):
