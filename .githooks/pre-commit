@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Blocks the commit if backend or frontend code fails lint/format checks
+# (both enforce a hard 120-character line-length limit).
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+
+# --- backend ---
+ruff="$repo_root/backend/.venv/bin/ruff"
+
+if [[ ! -x "$ruff" ]]; then
+  echo "ruff not found at backend/.venv/bin/ruff — set up the backend venv first:" >&2
+  echo "  cd backend && python3.13 -m venv .venv && source .venv/bin/activate && pip install -r requirements-dev.txt" >&2
+  exit 1
+fi
+
+cd "$repo_root/backend"
+
+if ! "$ruff" check .; then
+  echo "" >&2
+  echo "Backend lint failed (includes line-length > 120). Fix the above, or run 'make format' to auto-fix." >&2
+  exit 1
+fi
+
+if ! "$ruff" format --check .; then
+  echo "" >&2
+  echo "Backend formatting check failed. Run 'make format' to fix, then re-stage and commit again." >&2
+  exit 1
+fi
+
+# --- frontend ---
+if [[ ! -d "$repo_root/frontend/node_modules" ]]; then
+  echo "frontend/node_modules not found — set up the frontend first:" >&2
+  echo "  cd frontend && nvm use && npm install" >&2
+  exit 1
+fi
+
+if ! command -v npm >/dev/null 2>&1; then
+  echo "npm not found on PATH — this shell hasn't loaded a Node version yet. Run 'nvm use' (from frontend/) before committing." >&2
+  exit 1
+fi
+
+cd "$repo_root/frontend"
+
+if ! npm run --silent typecheck; then
+  echo "" >&2
+  echo "Frontend typecheck failed." >&2
+  exit 1
+fi
+
+if ! npm run --silent lint; then
+  echo "" >&2
+  echo "Frontend lint failed." >&2
+  exit 1
+fi
+
+if ! npm run --silent format:check; then
+  echo "" >&2
+  echo "Frontend formatting check failed (includes line-length > 120). Run 'make frontend-format' to fix, then re-stage and commit again." >&2
+  exit 1
+fi
