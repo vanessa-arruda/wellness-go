@@ -38,7 +38,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Log in</CardTitle>
-          <CardDescription>Welcome back to wellness-go.</CardDescription>
+          <CardDescription>Welcome to Wellness-Go!</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

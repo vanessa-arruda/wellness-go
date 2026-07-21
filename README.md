@@ -51,6 +51,8 @@ Tests run against a separate `wellness_test` Postgres database (see `backend/tes
 
 `.github/workflows/backend-tests.yml` runs on every push/PR: `ruff check`, `ruff format --check`, a from-scratch `alembic upgrade head` against a throwaway database (catches a broken migration chain, not just "works on my already-migrated dev DB"), then the full pytest suite against its own Postgres service container.
 
+`.github/workflows/frontend-tests.yml` runs on every push/PR: `tsc --noEmit`, `eslint`, `prettier --check`, then `next build` — same checks as the local pre-commit hook below, so a commit that passes locally should always pass CI.
+
 ### Local git hooks
 
 Run once per clone to enable them (git hooks are local-only, not something a repo can activate on its own):
@@ -62,9 +64,11 @@ make install-hooks
 This points git at the versioned `.githooks/` directory, enabling:
 
 - **`commit-msg`** — rejects commits whose message doesn't match `type(wellness-go): description` (type is one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`).
-- **`pre-commit`** — rejects the commit if `backend/` fails `ruff check` (lint, including a hard 120-character line-length limit via `E501`) or isn't `ruff format`-clean.
+- **`pre-commit`** — rejects the commit if either app fails its checks:
+  - `backend/`: `ruff check` (lint, including a hard 120-character line-length limit via `E501`) and `ruff format --check`.
+  - `frontend/`: `tsc --noEmit`, `eslint` (including a hard 120-character `max-len` — Prettier's `printWidth` alone doesn't cover comments or unbreakable strings, so `max-len` is the real enforcement, scoped off `src/components/ui/**` since shadcn's long Tailwind `className` strings aren't meant to be wrapped), and `prettier --check`.
 
-Other Makefile targets: `make lint`, `make format` (auto-fix), `make format-check`, `make test`, `make check` (lint + format-check + test, everything CI runs minus the migration/Postgres steps).
+Other Makefile targets: `make lint` / `make format` / `make format-check` / `make test` (backend); `make frontend-lint` / `make frontend-format` / `make frontend-format-check` / `make frontend-build` (frontend); `make check` runs everything both CI workflows run.
 
 ### API
 

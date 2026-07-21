@@ -1,4 +1,5 @@
-.PHONY: install-hooks lint format format-check test check
+.PHONY: install-hooks lint format format-check test check \
+	frontend-lint frontend-typecheck frontend-format frontend-format-check frontend-build frontend-check
 
 install-hooks:
 	git config core.hooksPath .githooks
@@ -16,4 +17,21 @@ format-check:
 test:
 	cd backend && .venv/bin/python -m pytest
 
-check: lint format-check test
+check: lint format-check test frontend-check
+
+frontend-lint:
+	cd frontend && npm run lint
+
+frontend-typecheck:
+	cd frontend && npm run typecheck
+
+frontend-format:
+	cd frontend && npm run format
+
+frontend-format-check:
+	cd frontend && npm run format:check
+
+frontend-build:
+	cd frontend && npm run build
+
+frontend-check: frontend-lint frontend-typecheck frontend-format-check frontend-build
