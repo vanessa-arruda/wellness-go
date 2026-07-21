@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { ProtectedRoute } from "@/components/protected-route";
 import type { TodayOverview } from "@/lib/types";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -48,9 +49,14 @@ function TodayDashboard() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Today</h1>
-        <Button variant="outline" onClick={handleLogout}>
-          Log out
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href="/profile" className={buttonVariants({ variant: "ghost" })}>
+            Profile
+          </Link>
+          <Button variant="outline" onClick={handleLogout}>
+            Log out
+          </Button>
+        </div>
       </div>
 
       {error && (
